@@ -1,0 +1,37 @@
+.stats { display: flex; gap: 28px; flex-wrap: wrap; margin: 10px 0 0; }
+.stat b { font-family: var(--font-head); font-size: 24px; display: block; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 13px; }
+.stat.good b { color: var(--ok); }
+.stat.bad b { color: var(--danger); }
+.view-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+.view-bar label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+.view-bar > div { min-width: 0; }
+.view-bar select { min-width: 160px; width: auto; }
+table.grid { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 780px; table-layout: fixed; font-size: 13px; }
+table.grid th { font-family: var(--font-head); font-weight: 600; text-align: center; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+table.grid th.p { width: 52px; color: var(--muted); font-family: var(--font-body); font-weight: 500; border-bottom: 0; border-right: 1px solid var(--line); }
+table.grid td { height: 38px; border-bottom: 1px dashed var(--line); padding: 0; vertical-align: top; }
+table.grid tr.noon td, table.grid tr.noon th { border-top: 2px solid var(--line); }
+table.grid td.blk {
+  --h: 210;
+  background: hsl(var(--h) var(--cell-s) var(--cell-l));
+  color: var(--cell-ink);
+  border-left: 3px solid hsl(var(--h) 55% var(--cell-bar-l));
+  border-bottom: 2px solid var(--surface);
+  padding: 5px 8px;
+  vertical-align: top;
+  overflow: hidden;
+}
+.blk b { display: block; font-weight: 600; }
+.blk small { display: block; font-size: 12px; opacity: 0.88; overflow-wrap: anywhere; }
+.empty-note { color: var(--muted); padding: 24px 0; }
+.issues { margin: 14px 0 0; padding-left: 18px; }
+.issues li { margin: 2px 0; }
+.session-label { font-size: 11px; color: var(--muted); display: block; font-weight: 400; }
+@media (prefers-reduced-motion: no-preference) {
+  .btn { transition: border-color .12s, filter .12s; }
+}
+@media (max-width: 560px) {
+  h1 { font-size: 23px; }
+  .panel { padding: 14px; }
+}

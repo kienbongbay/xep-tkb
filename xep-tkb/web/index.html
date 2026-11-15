@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xếp thời khóa biểu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Bố cục: một cột rộng, hai tab (nhập dữ liệu, xem kết quả). Màu theo môn học chỉ dùng trong lưới tiết x thứ. */
+:root {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #576373;
+  --line: #dbe0e7;
+  --accent: #1f5fd1;
+  --accent-ink: #ffffff;
+  --accent-soft: #e6eefc;
+  --danger: #b3261e;
+  --ok: #17703f;
+  --warn: #8f5500;
+  --field: #ffffff;
+  --cell-s: 62%;
+  --cell-l: 91%;
+  --cell-bar-l: 42%;
+  --cell-ink: #17202b;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-head: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10151b;
+    --surface: #171e26;
+    --ink: #e8edf3;
+    --muted: #9ba7b5;
+    --line: #29333f;
+    --accent: #78a2ff;
+    --accent-ink: #0a1220;
+    --accent-soft: #1d2a42;
+    --danger: #ff8f86;
+    --ok: #62d394;
+    --warn: #f0b658;
+    --field: #121920;
+    --cell-s: 45%;
+    --cell-l: 24%;
+    --cell-bar-l: 62%;
+    --cell-ink: #eef2f7;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10151b;
+  --surface: #171e26;
+  --ink: #e8edf3;
+  --muted: #9ba7b5;
+  --line: #29333f;
+  --accent: #78a2ff;
+  --accent-ink: #0a1220;
+  --accent-soft: #1d2a42;
+  --danger: #ff8f86;
+  --ok: #62d394;
+  --warn: #f0b658;
+  --field: #121920;
+  --cell-s: 45%;
+  --cell-l: 24%;
+  --cell-bar-l: 62%;
+  --cell-ink: #eef2f7;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  margin: 0;
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-head); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: 28px; font-weight: 700; }
+h2 { font-size: 18px; font-weight: 600; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 62ch; }
+.tabs { display: flex; gap: 4px; margin: 20px 0 16px; border-bottom: 1px solid var(--line); }
+.tab {
+  font: inherit; font-weight: 500; color: var(--muted); background: none; border: 0;
+  padding: 10px 14px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab:hover { color: var(--ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.hint { color: var(--muted); font-size: 13px; margin: 2px 0 12px; max-width: 78ch; }
+.scroll { overflow-x: auto; }
+table.form { border-collapse: collapse; width: 100%; }
+table.form th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 0 6px 6px 0; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.04em; }
+table.form td { padding: 0 6px 6px 0; vertical-align: middle; }
+input, select, textarea, button { font: inherit; color: inherit; }
+input[type=text], input[type=number], select, textarea {
+  background: var(--field); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; width: 100%; min-width: 0;
+}
+table.form input { min-width: 70px; }
+table.form td.w-name input { min-width: 150px; }
+table.form td.w-num input { min-width: 64px; max-width: 90px; }
+textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.45; resize: vertical; }
+.btn {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 14px; cursor: pointer; font-weight: 500;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; padding: 10px 20px; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { border-color: transparent; color: var(--muted); padding: 6px 9px; }
+.btn.ghost:hover { color: var(--danger); border-color: var(--line); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.banner { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.banner p { margin: 0; min-width: 0; flex: 1 1 320px; }
+.warn { color: var(--warn); font-size: 12.5px; white-space: nowrap; }
+.err { color: var(--danger); font-size: 12.5px; }
+.busy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px 18px; }
+.busy-grid label { display: block; font-weight: 500; margin-bottom: 3px; }
+.status { min-height: 1.5em; margin: 0; }
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--danger); }
+details { margin-top: 4px; }
+summary { cursor: pointer; font-weight: 500; padding: 4px 0; }
+.stats { display: flex; gap: 28px; flex-wrap: wrap; margin: 10px 0 0; }
+.stat b { font-family: var(--font-head); font-size: 24px; display: block; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 13px; }
+.stat.good b { color: var(--ok); }
+.stat.bad b { color: var(--danger); }
+.view-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+.view-bar label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+.view-bar > div { min-width: 0; }
+.view-bar select { min-width: 160px; width: auto; }
+table.grid { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 780px; table-layout: fixed; font-size: 13px; }
+table.grid th { font-family: var(--font-head); font-weight: 600; text-align: center; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+table.grid th.p { width: 52px; color: var(--muted); font-family: var(--font-body); font-weight: 500; border-bottom: 0; border-right: 1px solid var(--line); }
+table.grid td { height: 38px; border-bottom: 1px dashed var(--line); padding: 0; vertical-align: top; }
+table.grid tr.noon td, table.grid tr.noon th { border-top: 2px solid var(--line); }
+table.grid td.blk {
+  --h: 210;
+  background: hsl(var(--h) var(--cell-s) var(--cell-l));
+  color: var(--cell-ink);
+  border-left: 3px solid hsl(var(--h) 55% var(--cell-bar-l));
+  border-bottom: 2px solid var(--surface);
+  padding: 5px 8px;
+  vertical-align: top;
+  overflow: hidden;
+}
+.blk b { display: block; font-weight: 600; }
+.blk small { display: block; font-size: 12px; opacity: 0.88; overflow-wrap: anywhere; }
+.empty-note { color: var(--muted); padding: 24px 0; }
+.issues { margin: 14px 0 0; padding-left: 18px; }
+.issues li { margin: 2px 0; }
+.session-label { font-size: 11px; color: var(--muted); display: block; font-weight: 400; }
+@media (prefers-reduced-motion: no-preference) {
+  .btn { transition: border-color .12s, filter .12s; }
+}
+@media (max-width: 560px) {
+  h1 { font-size: 23px; }
+  .panel { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Xếp thời khóa biểu</h1>
+    <p class="sub">Nhập phòng học, lớp học phần và lịch bận của giảng viên. Chương trình tô màu đồ thị xung đột (DSATUR) rồi chọn khung giờ và phòng theo kiểu tham lam.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-btn-du-lieu" aria-controls="tab-du-lieu" data-tab="du-lieu">Dữ liệu</button>
+    <button class="tab" role="tab" id="tab-btn-ket-qua" aria-controls="tab-ket-qua" data-tab="ket-qua">Thời khóa biểu</button>
+  </div>
+
+  <main>
+  <section id="tab-du-lieu" role="tabpanel" aria-labelledby="tab-btn-du-lieu">
+    <div class="banner" id="sample-banner" hidden>
+      <p><b>Đang là dữ liệu mẫu.</b> Sửa trực tiếp trong các bảng bên dưới, hoặc xóa hết để nhập dữ liệu của bạn.</p>
+      <button type="button" class="btn" id="btn-clear">Xóa hết để nhập mới</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Phòng học</h2></div>
+      <p class="hint">Loại phòng tự đặt (ví dụ ly_thuyet, may_tinh, thuc_hanh). Lớp học phần chỉ được xếp vào phòng cùng loại và đủ sức chứa.</p>
+      <div class="scroll">
+        <table class="form" aria-label="Danh sách phòng học">
+          <thead><tr><th>Mã phòng</th><th>Sức chứa</th><th>Loại phòng</th><th></th></tr></thead>
+          <tbody id="rooms-body"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn" id="add-room">Thêm phòng</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Lớp học phần</h2></div>
+      <p class="hint">Mỗi buổi gồm các tiết liên tiếp trong cùng buổi sáng (tiết 1-5) hoặc buổi chiều (tiết 6-10). Hai lớp học phần cùng giảng viên hoặc cùng lớp sinh viên không bao giờ trùng giờ.</p>
+      <div class="scroll">
+        <table class="form" aria-label="Danh sách lớp học phần">
+          <thead><tr><th>Mã LHP</th><th>Môn học</th><th>Giảng viên</th><th>Lớp</th><th>Sĩ số</th><th>Buổi/tuần</th><th>Tiết/buổi</th><th>Loại phòng cần</th><th></th><th></th></tr></thead>
+          <tbody id="secs-body"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn" id="add-sec">Thêm lớp học phần</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Giảng viên bận</h2></div>
+      <p class="hint">Định dạng <b>thứ:tiết</b>, cách nhau dấu phẩy, thứ từ 2 đến 7. Ví dụ <b>2:1-5</b> là bận tiết 1-5 Thứ 2, <b>7:all</b> là bận cả Thứ 7, <b>3:7</b> là bận tiết 7 Thứ 3. Có thể ghép: <b>2:1-5, 7:all</b>. Để trống nếu không bận.</p>
+      <div class="busy-grid" id="busy-grid"></div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <button type="button" class="btn primary" id="btn-run">Xếp thời khóa biểu</button>
+        <p class="status" id="status" role="status"></p>
+      </div>
+      <details>
+        <summary>Nhập / xuất dữ liệu (JSON)</summary>
+        <p class="hint">Dùng cùng định dạng với file <b>data.json</b> của bản Python, nên hai bản đọc được dữ liệu của nhau.</p>
+        <textarea id="json-box" rows="8" aria-label="Dữ liệu JSON" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:8px">
+          <button type="button" class="btn" id="btn-json-out">Xuất ra ô trên</button>
+          <button type="button" class="btn" id="btn-json-in">Nạp từ ô trên</button>
+          <button type="button" class="btn" id="btn-json-copy">Sao chép</button>
+          <span class="status" id="json-status"></span>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="tab-ket-qua" role="tabpanel" aria-labelledby="tab-btn-ket-qua" hidden>
+    <div class="panel">
+      <h2>Kết quả</h2>
+      <div class="stats" id="stats"></div>
+      <ul class="issues" id="issues"></ul>
+    </div>
+    <div class="panel">
+      <div class="view-bar">
+        <div><label for="view-kind">Xem theo</label>
+          <select id="view-kind">
+            <option value="group">Lớp</option>
+            <option value="teacher">Giảng viên</option>
+            <option value="room">Phòng</option>
+          </select></div>
+        <div><label for="view-item">Chọn</label><select id="view-item"></select></div>
+      </div>
+      <div class="scroll" id="grid-wrap"></div>
+    </div>
+    <div class="panel">
+      <details>
+        <summary>Bảng danh sách (CSV)</summary>
+        <p class="hint">Sao chép rồi dán vào Excel hoặc lưu thành file .csv.</p>
+        <textarea id="csv-box" rows="9" readonly aria-label="Dữ liệu CSV" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:8px"><button type="button" class="btn" id="btn-csv-copy">Sao chép CSV</button><span class="status" id="csv-status"></span></div>
+      </details>
+    </div>
+  </section>
+  </main>
+</div>
+
+<datalist id="kinds"><option value="ly_thuyet"><option value="may_tinh"><option value="thuc_hanh"></datalist>
+
+<script>
+// ==CORE_START==
+const DAYS = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+const PERIODS = 10;
+
+// "2:1-5, 7:all" -> Set của "ngày,tiết" hoặc "ngày,*" (ngày 0..5 ứng với Thứ 2..7)
+function parseBusy(text) {
+  const res = new Set();
+  for (let tok of String(text || "").split(",")) {
+    tok = tok.trim();
+    if (!tok) continue;
+    const i = tok.indexOf(":");
+    const dStr = (i < 0 ? tok : tok.slice(0, i)).trim();
+    const pStr = (i < 0 ? "" : tok.slice(i + 1)).trim().toLowerCase();
+    const day = parseInt(dStr, 10) - 2;
+    if (!/^\d+$/.test(dStr) || day < 0 || day > 5) throw new Error("Thứ phải từ 2 đến 7 (gặp “" + tok + "”)");
+    if (pStr === "" || pStr === "all") res.add(day + ",*");
+    else if (pStr.includes("-")) {
+      const [a, b] = pStr.split("-").map(x => parseInt(x, 10));
+      if (!(a >= 1 && a <= b && b <= PERIODS)) throw new Error("Tiết phải từ 1 đến 10 (gặp “" + tok + "”)");
+      for (let x = a; x <= b; x++) res.add(day + "," + x);
+    } else {
+      const x = parseInt(pStr, 10);
+      if (!(x >= 1 && x <= PERIODS)) throw new Error("Tiết phải từ 1 đến 10 (gặp “" + tok + "”)");
+      res.add(day + "," + x);
+    }
+  }
+  return res;
+}
+
+const SAMPLE = {
+  rooms: [
+    { id: "A101", capacity: 60, kind: "ly_thuyet" }, { id: "A102", capacity: 60, kind: "ly_thuyet" },
+    { id: "A201", capacity: 40, kind: "ly_thuyet" }, { id: "A202", capacity: 40, kind: "ly_thuyet" },
+    { id: "B101", capacity: 90, kind: "ly_thuyet" }, { id: "LAB1", capacity: 40, kind: "may_tinh" },
+    { id: "LAB2", capacity: 40, kind: "may_tinh" }
+  ],
+  sections: [
+    ["MAT101", "Giải tích 1", "GV_An", "CNTT1", 55, 2, 3, "ly_thuyet"],
+    ["MAT102", "Đại số tuyến tính", "GV_Binh", "CNTT1", 55, 2, 3, "ly_thuyet"],
+    ["PHY101", "Vật lý đại cương", "GV_Cuong", "CNTT1", 55, 2, 3, "ly_thuyet"],
+    ["INT101", "Nhập môn lập trình", "GV_Dung", "CNTT1", 40, 2, 3, "may_tinh"],
+    ["MAT101B", "Giải tích 1", "GV_An", "CNTT2", 58, 2, 3, "ly_thuyet"],
+    ["ENG101", "Tiếng Anh 1", "GV_Em", "CNTT2", 58, 2, 3, "ly_thuyet"],
+    ["INT102", "Cấu trúc dữ liệu", "GV_Dung", "CNTT2", 38, 2, 3, "may_tinh"],
+    ["PHY101B", "Vật lý đại cương", "GV_Cuong", "CNTT2", 58, 2, 3, "ly_thuyet"],
+    ["INT201", "Cơ sở dữ liệu", "GV_Giang", "KHMT1", 38, 2, 3, "may_tinh"],
+    ["INT202", "Hệ điều hành", "GV_Hoa", "KHMT1", 38, 2, 3, "ly_thuyet"],
+    ["MAT201", "Xác suất thống kê", "GV_Binh", "KHMT1", 38, 2, 3, "ly_thuyet"],
+    ["ENG201", "Tiếng Anh 2", "GV_Em", "KHMT1", 38, 2, 3, "ly_thuyet"],
+    ["INT301", "Học máy", "GV_Giang", "KHMT2", 35, 2, 3, "may_tinh"],
+    ["INT302", "Mạng máy tính", "GV_Hoa", "KHMT2", 35, 2, 3, "ly_thuyet"],
+    ["ECO101", "Kinh tế vi mô", "GV_Khang", "KT1", 85, 2, 3, "ly_thuyet"],
+    ["ECO102", "Kinh tế vĩ mô", "GV_Khang", "KT1", 85, 2, 3, "ly_thuyet"],
+    ["MAT103", "Toán kinh tế", "GV_An", "KT1", 85, 2, 3, "ly_thuyet"]
+  ].map(a => ({ id: a[0], name: a[1], teacher: a[2], group: a[3], students: a[4], sessions: a[5], length: a[6], roomKind: a[7] })),
+  busy: { GV_An: "7:all", GV_Binh: "2:1-5", GV_Khang: "4:all" }
+};
+// ==CORE_END==
+
+// ---------------------------------------------------------------- Thuật toán xếp lịch ngay trong trình duyệt
+// (dùng khi không có máy chủ Flask, ví dụ mở bằng Go Live)
+function startPeriods(len) {
+  const res = [];
+  for (const [a, b] of [[1, 5], [6, 10]]) for (let s = a; s <= b - len + 1; s++) res.push(s);
+  return res;
+}
+function fits(room, sec) { return room.kind === sec.roomKind && room.capacity >= sec.students; }
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function schedule(p) {
+  const verts = [];
+  for (const s of p.sections) for (let k = 0; k < s.sessions; k++) verts.push({ vid: verts.length, sec: s, idx: k });
+  const adj = verts.map(() => new Set());
+  const link = key => {
+    const m = new Map();
+    for (const v of verts) { const k = key(v); if (!m.has(k)) m.set(k, []); m.get(k).push(v.vid); }
+    for (const ids of m.values()) for (const i of ids) for (const j of ids) if (i !== j) adj[i].add(j);
+  };
+  link(v => "t|" + v.sec.teacher); link(v => "g|" + v.sec.group); link(v => "s|" + v.sec.id);
+
+  const color = new Map(), roomOf = new Map(), roomUsed = new Map();
+  const loadG = new Map(), loadT = new Map();
+  const fitting = new Map();
+  for (const s of p.sections) fitting.set(s.id, p.rooms.filter(r => fits(r, s)).sort((a, b) => a.capacity - b.capacity));
+  const cellsOf = (v, slot) => { const r = []; for (let i = 0; i < v.sec.length; i++) r.push(slot[0] + "," + (slot[1] + i)); return r; };
+
+  const teacherFree = (v, slot) => {
+    const busy = p.busy[v.sec.teacher];
+    if (!busy) return true;
+    for (let i = 0; i < v.sec.length; i++) {
+      if (busy.has(slot[0] + ",*") || busy.has(slot[0] + "," + (slot[1] + i))) return false;
+    }
+    return true;
+  };
+  const neighborFree = (v, slot) => {
+    for (const u of adj[v.vid]) {
+      const c = color.get(u);
+      if (c && c[0] === slot[0] && slot[1] < c[1] + verts[u].sec.length && c[1] < slot[1] + v.sec.length) return false;
+    }
+    return true;
+  };
+  const pickRoom = (v, slot) => {
+    const cells = cellsOf(v, slot);
+    return fitting.get(v.sec.id).find(r => cells.every(c => !(roomUsed.get(c) && roomUsed.get(c).has(r.id)))) || null;
+  };
+  const softCost = (v, slot) => {
+    const [d, s] = slot;
+    let cost = 0;
+    for (const u of adj[v.vid]) {
+      if (color.has(u) && verts[u].sec.id === v.sec.id) {
+        const ud = color.get(u)[0];
+        if (ud === d) cost += 50; else if (Math.abs(ud - d) === 1) cost += 5;
+      }
+    }
+    cost += (loadG.get(v.sec.group + "|" + d) || 0) * 2;
+    cost += (loadT.get(v.sec.teacher + "|" + d) || 0);
+    if (s === 1) cost += 3;
+    if (s + v.sec.length - 1 >= 9) cost += 4;
+    if (d === 5) cost += 15;
+    return cost;
+  };
+  const bump = (m, k, n) => m.set(k, (m.get(k) || 0) + n);
+  const place = (v, slot, room) => {
+    color.set(v.vid, slot); roomOf.set(v.vid, room);
+    for (const c of cellsOf(v, slot)) { if (!roomUsed.has(c)) roomUsed.set(c, new Set()); roomUsed.get(c).add(room.id); }
+    bump(loadG, v.sec.group + "|" + slot[0], v.sec.length);
+    bump(loadT, v.sec.teacher + "|" + slot[0], v.sec.length);
+  };
+  const unplace = v => {
+    const slot = color.get(v.vid), room = roomOf.get(v.vid);
+    for (const c of cellsOf(v, slot)) roomUsed.get(c).delete(room.id);
+    bump(loadG, v.sec.group + "|" + slot[0], -v.sec.length);
+    bump(loadT, v.sec.teacher + "|" + slot[0], -v.sec.length);
+    color.delete(v.vid); roomOf.delete(v.vid);
+  };
+  const tryVertex = v => {
+    let best = null;
+    for (let d = 0; d < DAYS.length; d++) {
+      for (const s of startPeriods(v.sec.length)) {
+        const slot = [d, s];
+        if (!teacherFree(v, slot) || !neighborFree(v, slot)) continue;
+        const room = pickRoom(v, slot);
+        if (!room) continue;
+        const cost = softCost(v, slot);
+        if (!best || cost < best.cost) best = { cost, slot, room };
+      }
+    }
+    if (!best) return false;
+    place(v, best.slot, best.room);
+    return true;
+  };
+  const saturation = vid => { const set = new Set(); for (const u of adj[vid]) if (color.has(u)) set.add(color.get(u).join()); return set.size; };
+
+  const remaining = new Set(verts.map(v => v.vid));
+  let failed = [];
+  while (remaining.size) {
+    let bestId = -1, bestKey = null;
+    for (const id of remaining) {
+      const key = [saturation(id), adj[id].size, verts[id].sec.students];
+      if (!bestKey || key[0] > bestKey[0] || (key[0] === bestKey[0] && (key[1] > bestKey[1] || (key[1] === bestKey[1] && key[2] > bestKey[2])))) { bestKey = key; bestId = id; }
+    }
+    remaining.delete(bestId);
+    if (!tryVertex(verts[bestId])) failed.push(bestId);
+  }
+
+  // Cứu các buổi thất bại: gỡ tạm một buổi xung đột, xếp buổi thất bại, rồi xếp lại buổi vừa gỡ
+  const rng = mulberry32(1);
+  for (let round = 0; round < 300 && failed.length; round++) {
+    const vid = failed.shift();
+    const cand = [...adj[vid]].filter(u => color.has(u));
+    if (!cand.length) { failed.push(vid); continue; }
+    const u = verts[cand[Math.floor(rng() * cand.length)]];
+    const oldSlot = color.get(u.vid), oldRoom = roomOf.get(u.vid);
+    unplace(u);
+    if (tryVertex(verts[vid])) { if (!tryVertex(u)) failed.push(u.vid); }
+    else { place(u, oldSlot, oldRoom); failed.push(vid); }
+  }
+
+  const sessions = [];
+  for (const [vid, slot] of color) {
+    const v = verts[vid];
+    sessions.push({ day: slot[0], start: slot[1], end: slot[1] + v.sec.length - 1, sec: v.sec, room: roomOf.get(vid), idx: v.idx });
+  }
+  sessions.sort((a, b) => a.day - b.day || a.start - b.start || a.sec.id.localeCompare(b.sec.id));
+  const unplaced = failed.map(id => {
+    const v = verts[id];
+    let why = "không còn khung giờ trống phù hợp";
+    if (!fitting.get(v.sec.id).length) why = "không có phòng đủ sức chứa và đúng loại";
+    return { sec: v.sec, idx: v.idx, why };
+  });
+  return { sessions, unplaced, errors: validateLocal(p, sessions), total: verts.length };
+}
+function validateLocal(p, sessions) {
+  const errors = [], cells = new Map();
+  for (const s of sessions) {
+    for (let t = s.start; t <= s.end; t++) {
+      const k = s.day + "," + t;
+      if (!cells.has(k)) cells.set(k, []);
+      cells.get(k).push(s);
+    }
+    const busy = p.busy[s.sec.teacher];
+    if (busy) for (let t = s.start; t <= s.end; t++) if (busy.has(s.day + ",*") || busy.has(s.day + "," + t)) errors.push(s.sec.teacher + " bị xếp vào giờ bận (" + DAYS[s.day] + ", tiết " + t + ")");
+    if (!fits(s.room, s.sec)) errors.push(s.sec.id + ": phòng " + s.room.id + " không phù hợp");
+  }
+  for (const [k, list] of cells) {
+    const [d, t] = k.split(",").map(Number);
+    for (const [name, f] of [["Giảng viên", x => x.sec.teacher], ["Lớp", x => x.sec.group], ["Phòng", x => x.room.id]]) {
+      const seen = new Set();
+      for (const x of list) { const key = f(x); if (seen.has(key)) errors.push(name + " " + key + " trùng lịch (" + DAYS[d] + ", tiết " + t + ")"); seen.add(key); }
+    }
+  }
+  return [...new Set(errors)];
+}
+
+// ---------------------------------------------------------------- Giao diện
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const NUM = new Set(["capacity", "students", "sessions", "length"]);
+const STORE_KEY = "xep-tkb-v1";
+let state = { rooms: [], sections: [], busy: {}, sample: false };
+let result = null;
+
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* bỏ qua */ }
+}
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) { const d = JSON.parse(raw); if (d && Array.isArray(d.rooms) && Array.isArray(d.sections)) return d; }
+  } catch (e) { /* bỏ qua */ }
+  return null;
+}
+function useSample() {
+  state = JSON.parse(JSON.stringify(SAMPLE)); state.sample = true;
+}
+
+function renderRooms() {
+  $("#rooms-body").innerHTML = state.rooms.map((r, i) => `<tr>
+    <td><input type="text" id="room-${i}-id" data-l="rooms" data-i="${i}" data-f="id" value="${esc(r.id)}" aria-label="Mã phòng"></td>
+    <td class="w-num"><input type="number" min="1" id="room-${i}-cap" data-l="rooms" data-i="${i}" data-f="capacity" value="${esc(r.capacity)}" aria-label="Sức chứa"></td>
+    <td><input type="text" list="kinds" id="room-${i}-kind" data-l="rooms" data-i="${i}" data-f="kind" value="${esc(r.kind)}" aria-label="Loại phòng"></td>
+    <td><button type="button" class="btn ghost" data-del="rooms" data-i="${i}" aria-label="Xóa phòng ${esc(r.id)}">Xóa</button></td></tr>`).join("");
+}
+function renderSections() {
+  $("#secs-body").innerHTML = state.sections.map((s, i) => `<tr>
+    <td><input type="text" id="sec-${i}-id" data-l="sections" data-i="${i}" data-f="id" value="${esc(s.id)}" aria-label="Mã lớp học phần"></td>
+    <td class="w-name"><input type="text" id="sec-${i}-name" data-l="sections" data-i="${i}" data-f="name" value="${esc(s.name)}" aria-label="Môn học"></td>
+    <td><input type="text" id="sec-${i}-teacher" data-l="sections" data-i="${i}" data-f="teacher" value="${esc(s.teacher)}" aria-label="Giảng viên"></td>
+    <td><input type="text" id="sec-${i}-group" data-l="sections" data-i="${i}" data-f="group" value="${esc(s.group)}" aria-label="Lớp sinh viên"></td>
+    <td class="w-num"><input type="number" min="1" id="sec-${i}-students" data-l="sections" data-i="${i}" data-f="students" value="${esc(s.students)}" aria-label="Sĩ số"></td>
+    <td class="w-num"><input type="number" min="1" max="6" id="sec-${i}-sessions" data-l="sections" data-i="${i}" data-f="sessions" value="${esc(s.sessions)}" aria-label="Số buổi mỗi tuần"></td>
+    <td class="w-num"><input type="number" min="1" max="5" id="sec-${i}-length" data-l="sections" data-i="${i}" data-f="length" value="${esc(s.length)}" aria-label="Số tiết mỗi buổi"></td>
+    <td><input type="text" list="kinds" id="sec-${i}-kind" data-l="sections" data-i="${i}" data-f="roomKind" value="${esc(s.roomKind)}" aria-label="Loại phòng cần"></td>
+    <td><span class="warn" data-warn="${i}"></span></td>
+    <td><button type="button" class="btn ghost" data-del="sections" data-i="${i}" aria-label="Xóa lớp học phần ${esc(s.id)}">Xóa</button></td></tr>`).join("");
+  updateWarns();
+}
+function updateWarns() {
+  state.sections.forEach((s, i) => {
+    const el = document.querySelector(`[data-warn="${i}"]`);
+    if (!el) return;
+    const ok = state.rooms.some(r => r.kind === s.roomKind && Number(r.capacity) >= Number(s.students));
+    el.textContent = ok ? "" : "Không có phòng phù hợp";
+  });
+}
+function teachers() { return [...new Set(state.sections.map(s => String(s.teacher).trim()).filter(Boolean))].sort(); }
+function renderBusy() {
+  const ts = teachers();
+  $("#busy-grid").innerHTML = ts.length ? ts.map((t, i) => `<div>
+    <label for="busy-${i}">${esc(t)}</label>
+    <input type="text" id="busy-${i}" data-busy="${esc(t)}" value="${esc(state.busy[t] || "")}" placeholder="Ví dụ 2:1-5, 7:all">
+    <div class="err" id="busy-err-${i}"></div></div>`).join("") : `<p class="hint">Thêm lớp học phần có giảng viên để nhập lịch bận.</p>`;
+  ts.forEach((t, i) => checkBusy(i, state.busy[t]));
+}
+function checkBusy(i, text) {
+  const el = $("#busy-err-" + i);
+  if (!el) return true;
+  try { parseBusy(text); el.textContent = ""; return true; } catch (e) { el.textContent = e.message; return false; }
+}
+function renderAll() {
+  renderRooms(); renderSections(); renderBusy();
+  $("#sample-banner").hidden = !state.sample;
+}
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.l) {
+    const f = t.dataset.f;
+    state[t.dataset.l][+t.dataset.i][f] = NUM.has(f) ? (t.value === "" ? "" : Number(t.value)) : t.value;
+    state.sample = false; $("#sample-banner").hidden = true;
+    updateWarns(); save();
+  } else if (t.dataset && t.dataset.busy) {
+    state.busy[t.dataset.busy] = t.value;
+    checkBusy(t.id.replace("busy-", ""), t.value); save();
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.f === "teacher") renderBusy();
+});
+document.addEventListener("click", e => {
+  const del = e.target.closest("[data-del]");
+  if (!del) return;
+  state[del.dataset.del].splice(+del.dataset.i, 1);
+  state.sample = false;
+  renderAll(); save();
+});
+$("#add-room").addEventListener("click", () => {
+  state.rooms.push({ id: "P" + (state.rooms.length + 1), capacity: 50, kind: "ly_thuyet" });
+  state.sample = false; renderAll(); save();
+  const el = $("#room-" + (state.rooms.length - 1) + "-id"); if (el) { el.focus(); el.select(); }
+});
+$("#add-sec").addEventListener("click", () => {
+  state.sections.push({ id: "", name: "", teacher: "", group: "", students: 40, sessions: 2, length: 3, roomKind: "ly_thuyet" });
+  state.sample = false; renderAll(); save();
+  const el = $("#sec-" + (state.sections.length - 1) + "-id"); if (el) el.focus();
+});
+$("#btn-clear").addEventListener("click", () => {
+  state = { rooms: [], sections: [], busy: {}, sample: false };
+  result = null; renderAll(); renderResult(); save(); setStatus("");
+});
+
+function setStatus(msg, kind) {
+  const el = $("#status"); el.textContent = msg; el.className = "status" + (kind ? " " + kind : "");
+}
+
+function collect() {
+  const errs = [], busy = {};
+  const rooms = state.rooms.map(r => ({ id: String(r.id).trim(), capacity: Number(r.capacity), kind: String(r.kind).trim() }));
+  const sections = state.sections.map(s => ({
+    id: String(s.id).trim(), name: String(s.name).trim() || String(s.id).trim(), teacher: String(s.teacher).trim(),
+    group: String(s.group).trim(), students: Number(s.students), sessions: Number(s.sessions), length: Number(s.length), roomKind: String(s.roomKind).trim()
+  }));
+  if (!rooms.length) errs.push("Chưa có phòng học nào.");
+  if (!sections.length) errs.push("Chưa có lớp học phần nào.");
+  const ids = new Set();
+  rooms.forEach((r, i) => {
+    if (!r.id) errs.push("Phòng thứ " + (i + 1) + " chưa có mã.");
+    else if (ids.has("r" + r.id)) errs.push("Mã phòng " + r.id + " bị trùng.");
+    ids.add("r" + r.id);
+    if (!(r.capacity > 0)) errs.push("Phòng " + (r.id || i + 1) + ": sức chứa phải lớn hơn 0.");
+    if (!r.kind) errs.push("Phòng " + (r.id || i + 1) + ": chưa có loại phòng.");
+  });
+  sections.forEach((s, i) => {
+    const n = s.id || "thứ " + (i + 1);
+    if (!s.id) errs.push("Lớp học phần thứ " + (i + 1) + " chưa có mã.");
+    else if (ids.has("s" + s.id)) errs.push("Mã lớp học phần " + s.id + " bị trùng.");
+    ids.add("s" + s.id);
+    if (!s.teacher) errs.push(n + ": chưa có giảng viên.");
+    if (!s.group) errs.push(n + ": chưa có lớp sinh viên.");
+    if (!(s.students > 0)) errs.push(n + ": sĩ số phải lớn hơn 0.");
+    if (!(Number.isInteger(s.sessions) && s.sessions >= 1 && s.sessions <= 6)) errs.push(n + ": số buổi mỗi tuần từ 1 đến 6.");
+    if (!(Number.isInteger(s.length) && s.length >= 1 && s.length <= 5)) errs.push(n + ": số tiết mỗi buổi từ 1 đến 5.");
+    if (!s.roomKind) errs.push(n + ": chưa có loại phòng cần.");
+  });
+  for (const t of teachers()) {
+    try { busy[t] = parseBusy(state.busy[t]); } catch (e) { errs.push("Lịch bận của " + t + ": " + e.message); }
+  }
+  return { errs, problem: { rooms, sections, busy } };
+}
+
+async function run(silent) {
+  const { errs, problem } = collect();
+  if (errs.length) {
+    setStatus(errs.slice(0, 4).join(" ") + (errs.length > 4 ? " (và " + (errs.length - 4) + " lỗi khác)" : ""), "bad");
+    return false;
+  }
+  const btn = $("#btn-run");
+  btn.disabled = true;
+  setStatus("Đang xếp lịch...");
+  try {
+    const busy = {};
+    for (const t of teachers()) busy[t] = state.busy[t] || "";
+    const res = await fetch("/api/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rooms: problem.rooms, sections: problem.sections, busy })
+    });
+    const data = await res.json();
+    if (!res.ok) { setStatus(data.error || "Máy chủ báo lỗi.", "bad"); return false; }
+    result = data;
+  } catch (e) {
+    // Không có máy chủ Flask (ví dụ mở bằng Go Live): tự tính ngay trong trình duyệt
+    const t0 = performance.now();
+    result = schedule(problem);
+    result.ms = Math.round(performance.now() - t0);
+  } finally {
+    btn.disabled = false;
+  }
+  renderResult();
+  const left = result.unplaced.length;
+  setStatus(left || result.errors.length ? "Đã xếp xong nhưng còn vấn đề, xem tab Thời khóa biểu." : "Đã xếp xong " + result.total + " buổi học, không có xung đột.", left || result.errors.length ? "bad" : "ok");
+  if (!silent) showTab("ket-qua");
+  return true;
+}
+$("#btn-run").addEventListener("click", () => run(false));
+
+// ----------------------------------------------------------------- Kết quả
+function hueOf(id) { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+function renderResult() {
+  const stats = $("#stats"), issues = $("#issues");
+  if (!result) {
+    stats.innerHTML = ""; issues.innerHTML = "";
+    $("#grid-wrap").innerHTML = `<p class="empty-note">Chưa có thời khóa biểu. Nhập dữ liệu ở tab Dữ liệu rồi bấm “Xếp thời khóa biểu”.</p>`;
+    $("#view-item").innerHTML = ""; $("#csv-box").value = "";
+    return;
+  }
+  const placed = result.total - result.unplaced.length;
+  const bad = result.unplaced.length || result.errors.length;
+  stats.innerHTML = `
+    <div class="stat ${result.unplaced.length ? "bad" : "good"}"><b>${placed}/${result.total}</b><span>buổi học đã xếp</span></div>
+    <div class="stat ${result.errors.length ? "bad" : "good"}"><b>${result.errors.length}</b><span>xung đột</span></div>
+    <div class="stat"><b>${result.ms} ms</b><span>thời gian tính</span></div>`;
+  issues.innerHTML = result.unplaced.map(u => `<li class="err">Chưa xếp được ${esc(u.sec.id)} (buổi ${u.idx + 1}): ${esc(u.why)}.</li>`).join("")
+    + result.errors.slice(0, 20).map(x => `<li class="err">${esc(x)}</li>`).join("");
+  fillItems();
+  renderGrid();
+  $("#csv-box").value = toCSV();
+}
+function itemKey(s, kind) { return kind === "group" ? s.sec.group : kind === "teacher" ? s.sec.teacher : s.room.id; }
+function fillItems() {
+  const kind = $("#view-kind").value, sel = $("#view-item"), prev = sel.value;
+  const items = [...new Set(result.sessions.map(s => itemKey(s, kind)))].sort((a, b) => a.localeCompare(b, "vi", { numeric: true }));
+  sel.innerHTML = items.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  if (items.includes(prev)) sel.value = prev;
+}
+function renderGrid() {
+  const wrap = $("#grid-wrap");
+  if (!result || !result.sessions.length) { wrap.innerHTML = `<p class="empty-note">Không có buổi học nào để hiển thị.</p>`; return; }
+  const kind = $("#view-kind").value, item = $("#view-item").value;
+  const list = result.sessions.filter(s => itemKey(s, kind) === item);
+  const g = DAYS.map(() => ({}));
+  for (const s of list) { g[s.day][s.start] = s; for (let t = s.start + 1; t <= s.end; t++) g[s.day][t] = "skip"; }
+  let html = `<table class="grid" aria-label="Thời khóa biểu ${esc(item)}"><thead><tr><th class="p"></th>${DAYS.map(d => `<th>${d}</th>`).join("")}</tr></thead><tbody>`;
+  for (let p = 1; p <= PERIODS; p++) {
+    html += `<tr class="${p === 6 ? "noon" : ""}"><th class="p">${p === 1 ? '<span class="session-label">Sáng</span>' : p === 6 ? '<span class="session-label">Chiều</span>' : ""}Tiết ${p}</th>`;
+    for (let d = 0; d < DAYS.length; d++) {
+      const c = g[d][p];
+      if (c === "skip") continue;
+      if (!c) { html += "<td></td>"; continue; }
+      const second = kind === "teacher" ? c.sec.group : c.sec.teacher;
+      const third = kind === "room" ? c.sec.group : "Phòng " + c.room.id;
+      html += `<td class="blk" rowspan="${c.end - c.start + 1}" style="--h:${hueOf(c.sec.id)}"><b>${esc(c.sec.id)}</b><small>${esc(c.sec.name)}</small><small>${esc(second)} · ${esc(third)}</small></td>`;
+    }
+    html += "</tr>";
+  }
+  wrap.innerHTML = html + "</tbody></table>";
+}
+$("#view-kind").addEventListener("change", () => { if (result) { fillItems(); renderGrid(); } });
+$("#view-item").addEventListener("change", renderGrid);
+
+function toCSV() {
+  const q = v => { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const rows = [["Thứ", "Tiết bắt đầu", "Tiết kết thúc", "Mã LHP", "Môn học", "Giảng viên", "Lớp", "Phòng"]];
+  for (const s of result.sessions) rows.push([DAYS[s.day], s.start, s.end, s.sec.id, s.sec.name, s.sec.teacher, s.sec.group, s.room.id]);
+  return rows.map(r => r.map(q).join(",")).join("\n");
+}
+
+function copyFrom(box, statusEl) {
+  const done = ok => { statusEl.textContent = ok ? "Đã sao chép" : "Hãy bôi đen và nhấn Ctrl+C"; setTimeout(() => statusEl.textContent = "", 2500); };
+  const fallback = () => { box.focus(); box.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (e) { /* bỏ qua */ } done(ok); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(box.value).then(() => done(true), fallback);
+  else fallback();
+}
+$("#btn-csv-copy").addEventListener("click", () => copyFrom($("#csv-box"), $("#csv-status")));
+$("#btn-json-copy").addEventListener("click", () => copyFrom($("#json-box"), $("#json-status")));
+
+// ------------------------------------------------------- JSON vào / ra (cùng định dạng data.json của bản Python)
+$("#btn-json-out").addEventListener("click", () => {
+  const busy = {};
+  for (const t of teachers()) {
+    let set; try { set = parseBusy(state.busy[t]); } catch (e) { continue; }
+    if (!set.size) continue;
+    busy[t] = [...set].map(k => { const [d, p] = k.split(","); return [Number(d), p === "*" ? null : Number(p)]; }).sort((a, b) => a[0] - b[0] || (a[1] || 0) - (b[1] || 0));
+  }
+  const data = {
+    rooms: state.rooms,
+    sections: state.sections.map(s => ({ id: s.id, name: s.name, teacher: s.teacher, group: s.group, students: s.students, sessions: s.sessions, length: s.length, room_kind: s.roomKind })),
+    teacher_busy: busy
+  };
+  $("#json-box").value = JSON.stringify(data, null, 2);
+  $("#json-status").textContent = "";
+});
+$("#btn-json-in").addEventListener("click", () => {
+  const st = $("#json-status");
+  try {
+    const d = JSON.parse($("#json-box").value);
+    const rooms = (d.rooms || []).map(r => ({ id: String(r.id), capacity: Number(r.capacity), kind: r.kind || "ly_thuyet" }));
+    const sections = (d.sections || []).map(s => ({
+      id: String(s.id), name: s.name || String(s.id), teacher: s.teacher, group: s.group, students: Number(s.students),
+      sessions: Number(s.sessions || 2), length: Number(s.length || 3), roomKind: s.room_kind || s.roomKind || "ly_thuyet"
+    }));
+    const busy = {};
+    for (const [t, v] of Object.entries(d.teacher_busy || {})) {
+      if (typeof v === "string") busy[t] = v;
+      else busy[t] = v.map(x => (x[0] + 2) + ":" + (x[1] == null ? "all" : x[1])).join(", ");
+    }
+    if (!rooms.length && !sections.length) throw new Error("Không thấy rooms hoặc sections");
+    state = { rooms, sections, busy, sample: false };
+    renderAll(); save(); st.textContent = "Đã nạp " + rooms.length + " phòng, " + sections.length + " lớp học phần";
+  } catch (e) { st.textContent = "JSON không hợp lệ: " + e.message; }
+});
+
+// --------------------------------------------------------------------- Tab
+function showTab(name) {
+  for (const t of document.querySelectorAll(".tab")) t.setAttribute("aria-selected", String(t.dataset.tab === name));
+  $("#tab-du-lieu").hidden = name !== "du-lieu";
+  $("#tab-ket-qua").hidden = name !== "ket-qua";
+  if (location.hash !== "#" + name) { try { history.replaceState(null, "", "#" + name); } catch (e) { location.hash = name; } }
+}
+for (const t of document.querySelectorAll(".tab")) t.addEventListener("click", () => showTab(t.dataset.tab));
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h === "du-lieu" || h === "ket-qua") showTab(h); });
+
+// ------------------------------------------------------------------ Khởi động
+(function init() {
+  const saved = loadSaved();
+  if (saved) state = { rooms: saved.rooms, sections: saved.sections, busy: saved.busy || {}, sample: !!saved.sample };
+  else useSample();
+  renderAll();
+  if (state.rooms.length && state.sections.length) run(true); else renderResult();
+  const h = location.hash.slice(1);
+  showTab(h === "ket-qua" ? "ket-qua" : "du-lieu");
+})();
+</script>
+
+</body>
+</html>

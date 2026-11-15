@@ -1,0 +1,47 @@
+XẾP THỜI KHÓA BIỂU TỰ ĐỘNG
+==========================
+
+Không cần cài thêm gì ngoài Python 3.8 trở lên.
+
+CẤU TRÚC THƯ MỤC (giữ nguyên, đừng tách file ra)
+    main.py          code xếp lịch (tô màu đồ thị DSATUR + tham lam)
+    server.py        máy chủ web, mở trang và nhận dữ liệu
+    chay.bat         bấm đúp để chạy trên Windows
+    web/index.html   giao diện
+
+CÁCH CHẠY
+  Cách 1 (Windows): bấm đúp vào file chay.bat
+  Cách 2: mở thư mục này trong VS Code, mở Terminal và gõ
+              python server.py
+          nếu báo không có lệnh python thì thử: py server.py
+          hoặc dùng đường dẫn Python của .venv, ví dụ:
+              D:\thuc-tap\.venv\Scripts\python.exe server.py
+
+  Trình duyệt tự mở trang (thường là http://127.0.0.1:8000/).
+  Nhấn Ctrl+C trong terminal để tắt.
+  Trong lúc dùng, KHÔNG đóng terminal.
+
+CÁCH DÙNG TRANG WEB
+  1. Tab "Dữ liệu": nhập phòng học, lớp học phần, lịch bận của giảng viên.
+     Lúc đầu có sẵn dữ liệu mẫu. Bấm "Xóa hết để nhập mới" để nhập của bạn.
+  2. Bấm "Xếp thời khóa biểu".
+  3. Tab "Thời khóa biểu": xem theo lớp, giảng viên hoặc phòng.
+     Có bảng CSV để sao chép vào Excel.
+
+ĐỊNH DẠNG LỊCH BẬN CỦA GIẢNG VIÊN  (thứ:tiết, thứ từ 2 đến 7)
+    2:1-5          bận tiết 1-5 Thứ 2
+    7:all          bận cả Thứ 7
+    3:7            bận tiết 7 Thứ 3
+    2:1-5, 7:all   ghép nhiều khoảng
+
+QUY ƯỚC TIẾT
+    Tiết 1-5 là buổi sáng, tiết 6-10 là buổi chiều.
+    Mỗi buổi học là các tiết liên tiếp trong cùng một buổi.
+
+DÙNG TRÊN MÀN HÌNH ĐEN (không cần web)
+    python main.py           nhập dữ liệu từng bước
+    python main.py --demo    chạy dữ liệu mẫu
+    python main.py data.json chạy từ file JSON
+
+MỞ TRANG BẰNG GO LIVE CỦA VS CODE
+    Vẫn dùng được: trang tự tính ngay trong trình duyệt khi không có server.

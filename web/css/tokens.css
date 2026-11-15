@@ -1,0 +1,62 @@
+/* Bố cục: một cột rộng, hai tab (nhập dữ liệu, xem kết quả). Màu theo môn học chỉ dùng trong lưới tiết x thứ. */
+:root {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #576373;
+  --line: #dbe0e7;
+  --accent: #1f5fd1;
+  --accent-ink: #ffffff;
+  --accent-soft: #e6eefc;
+  --danger: #b3261e;
+  --ok: #17703f;
+  --warn: #8f5500;
+  --field: #ffffff;
+  --cell-s: 62%;
+  --cell-l: 91%;
+  --cell-bar-l: 42%;
+  --cell-ink: #17202b;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-head: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10151b;
+    --surface: #171e26;
+    --ink: #e8edf3;
+    --muted: #9ba7b5;
+    --line: #29333f;
+    --accent: #78a2ff;
+    --accent-ink: #0a1220;
+    --accent-soft: #1d2a42;
+    --danger: #ff8f86;
+    --ok: #62d394;
+    --warn: #f0b658;
+    --field: #121920;
+    --cell-s: 45%;
+    --cell-l: 24%;
+    --cell-bar-l: 62%;
+    --cell-ink: #eef2f7;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10151b;
+  --surface: #171e26;
+  --ink: #e8edf3;
+  --muted: #9ba7b5;
+  --line: #29333f;
+  --accent: #78a2ff;
+  --accent-ink: #0a1220;
+  --accent-soft: #1d2a42;
+  --danger: #ff8f86;
+  --ok: #62d394;
+  --warn: #f0b658;
+  --field: #121920;
+  --cell-s: 45%;
+  --cell-l: 24%;
+  --cell-bar-l: 62%;
+  --cell-ink: #eef2f7;
+  color-scheme: dark;
+}
